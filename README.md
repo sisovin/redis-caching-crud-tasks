@@ -1,2 +1,1 @@
-# redis-caching-crud-tasks
-A repository for implementing Redis caching in a CRUD tasks app
+This repository is empty. Any task executed on it should be considered a new capability and needs to be created.
