@@ -4,7 +4,9 @@ from django.core.cache import cache
 from django.http import JsonResponse
 from django.views.decorators.cache import cache_page
 from django.views.decorators.http import require_http_methods
-from .models import Task
+from task_manager.models import Task  # Changed from relative import to absolute
+
+# Rest of your view code...
 
 # Configure Redis connection
 redis_client = redis.StrictRedis(

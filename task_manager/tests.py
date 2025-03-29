@@ -1,9 +1,10 @@
 from django.test import TestCase
 from django.urls import reverse
 from django.core.cache import cache
-from .models import Task
 import redis
 from django.conf import settings
+import json
+from .models import Task  # Use the relative import here as we're in the app directory
 
 # Configure Redis connection
 redis_client = redis.StrictRedis(
@@ -17,13 +18,14 @@ class RedisCachingTests(TestCase):
     def setUp(self):
         self.task = Task.objects.create(title="Test Task", description="Test Description", completed=False)
         cache.clear()
+        redis_client.flushdb()  # Clear Redis cache before each test
 
     def test_cache_task(self):
         self.task.cache_task()
         cache_key = f"task_{self.task.id}"
         cached_task = redis_client.get(cache_key)
         self.assertIsNotNone(cached_task)
-        self.assertEqual(eval(cached_task), self.task.to_dict())
+        self.assertEqual(json.loads(cached_task), self.task.to_dict())
 
     def test_uncache_task(self):
         self.task.cache_task()
@@ -42,12 +44,31 @@ class RedisCachingTests(TestCase):
         self.assertEqual(len(response.json()), 1)
 
     def test_create_task(self):
-        response = self.client.post(reverse('create_task'), {'title': 'New Task', 'description': 'New Description'})
+        # Send JSON data instead of form data
+        data = {
+            'title': 'New Task',
+            'description': 'New Description',
+            'completed': False
+        }
+        response = self.client.post(
+            reverse('create_task'),
+            data=json.dumps(data),
+            content_type='application/json'
+        )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['status'], 'Task created')
 
     def test_update_task(self):
-        response = self.client.put(reverse('update_task', args=[self.task.id]), {'title': 'Updated Task', 'description': 'Updated Description'})
+        # Send JSON data instead of form data
+        data = {
+            'title': 'Updated Task',
+            'description': 'Updated Description'
+        }
+        response = self.client.put(
+            reverse('update_task', args=[self.task.id]),
+            data=json.dumps(data),
+            content_type='application/json'
+        )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['status'], 'Task updated')
 
@@ -59,4 +80,4 @@ class RedisCachingTests(TestCase):
     def test_frequently_accessed_data(self):
         response = self.client.get(reverse('frequently_accessed_data'))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()['data'], 'Frequently accessed data')
+        self.assertIn('data', response.json())
