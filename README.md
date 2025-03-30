@@ -135,6 +135,8 @@ redis-caching-crud-tasks/
 │   │   ├── test_caching.py         # Caching tests
 │   │   └── test_integration.py     # Cross-app tests
 │   ├── manage.py
+│   ├──swagger.yaml
+│   ├──postman.json
 │   └── requirements/               # Split requirements
 │       ├── base.txt                # Common dependencies
 │       ├── dev.txt                 # Development dependencies
