@@ -91,7 +91,6 @@ This project demonstrates how to implement Redis caching in a Django REST API wi
 Below is structure with multiple Django apps, user authentication, advanced Redis caching strategies, and proper testing setup without relying on Docker. Here's the recommended structure:
 
 ```
-```
 redis-caching-crud-tasks/
 ├── backend/
 │   ├── config/                     # Django project settings
