@@ -1,0 +1,469 @@
+openapi: 3.0.0
+info:
+  title: Redis Caching CRUD Tasks API
+  description: A Django API for task management with Redis caching
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@example.com
+servers:
+  - url: http://localhost:8000
+    description: Local development server
+tags:
+  - name: auth
+    description: User authentication operations
+  - name: status
+    description: Service status operations
+  - name: health
+    description: Health check operations
+  - name: accounts
+    description: User account management operations
+  - name: users
+    description: User profile management operations
+  - name: groups
+    description: User group management operations
+  - name: permissions
+    description: User permissions management operations
+  - name: roles
+    description: User role management operations
+  - name: notifications
+    description: User notifications management operations
+  - name: messages
+    description: User messages management operations
+  - name: settings
+    description: User settings management operations
+  - name: preferences
+    description: User preferences management operations
+  - name: profiles
+    description: User profile operations
+  - name: tasks
+    description: Task management operations
+  - name: data
+    description: Frequently accessed data operations
+
+paths:
+  # Authentication endpoint
+  /api/accounts/register/:
+    post:
+      tags:
+        - auth
+      summary: Register a new user
+      description: Creates a new user account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegistration'
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+                  refresh:
+                    type: string
+                    example: "eyJ0eXAi...refreshtoken"
+                  access:
+                    type: string
+                    example: "eyJ0eXAi...accesstoken"
+        '400':
+          description: Invalid registration data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/accounts/login/:
+    post:
+      summary: Login user
+      description: Authenticate a user and return tokens
+      tags:
+        - auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Login'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+                  refresh:
+                    type: string
+                  access:
+                    type: string
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /accounts/logout/:
+    post:
+      summary: Logout user
+      description: Logout a user and invalidate tokens
+      tags:
+        - auth
+      responses:
+        '200':
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User logged out successfully
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # Startup endpoint
+  /status/:
+    get:
+      summary: Service status
+      description: Returns the current status of the service
+      tags:
+        - status
+      responses:
+        '200':
+          description: Service is running
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: running
+                  message:
+                    type: string
+                    example: Service is operational
+        '503':
+          description: Service is unavailable
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: unavailable
+                  message:
+                    type: string
+                    example: Service is currently down for maintenance
+  # Health check endpoint
+  /api/health/:
+    get:
+      summary: Health check
+      description: Checks the health status of the service
+      tags:
+        - health
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: healthy
+                  message:
+                    type: string
+                    example: Service is running correctly
+  
+  # CRUD operations for tasks
+  /tasks/:
+    get:
+      summary: Get all tasks
+      description: Retrieves a list of all tasks from the database or cache
+      tags:
+        - tasks
+      responses:
+        '200':
+          description: Successful retrieval of tasks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Task'
+  
+  /tasks/create/:
+    post:
+      summary: Create a new task
+      description: Creates a new task in the database and updates the cache
+      tags:
+        - tasks
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskCreate'
+      responses:
+        '200':
+          description: Task created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: Task created
+                  task_id:
+                    type: integer
+                    example: 1
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /tasks/update/{taskId}/:
+    put:
+      summary: Update an existing task
+      description: Updates a task in the database and refreshes the cache
+      tags:
+        - tasks
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          description: ID of the task to update
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskUpdate'
+      responses:
+        '200':
+          description: Task updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: Task updated
+                  task_id:
+                    type: integer
+                    example: 1
+        '404':
+          description: Task not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /tasks/delete/{taskId}/:
+    delete:
+      summary: Delete a task
+      description: Deletes a task from the database and removes it from cache
+      tags:
+        - tasks
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          description: ID of the task to delete
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Task deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: Task deleted
+                  task_id:
+                    type: integer
+                    example: 1
+        '404':
+          description: Task not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /frequently-accessed-data/:
+    get:
+      summary: Get frequently accessed data
+      description: Retrieves frequently accessed data with memoization caching
+      tags:
+        - data
+      responses:
+        '200':
+          description: Successful retrieval of data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: string
+                    example: Frequently accessed data
+                  stats:
+                    type: object
+                    properties:
+                      total_tasks:
+                        type: integer
+                        example: 10
+                      completed_tasks:
+                        type: integer
+                        example: 5
+
+components:
+  schemas:
+    # Add to components.schemas section
+    UserRegistration:
+      type: object
+      required:
+        - username
+        - email
+        - password
+        - password_confirm
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+        password_confirm:
+          type: string
+          format: password
+        first_name:
+          type: string
+        last_name:
+          type: string
+          
+    Login:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+          format: password
+              
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+        first_name:
+          type: string
+        last_name:
+          type: string
+        bio:
+          type: string
+        avatar:
+          type: string
+          format: uri
+
+    # Tasks
+    Task:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        title:
+          type: string
+          example: Complete the project
+        description:
+          type: string
+          example: Finish the Redis caching implementation
+        completed:
+          type: boolean
+          example: false
+    
+    TaskCreate:
+      type: object
+      required:
+        - title
+      properties:
+        title:
+          type: string
+          example: New task
+        description:
+          type: string
+          example: Description of the new task
+        completed:
+          type: boolean
+          example: false
+    
+    TaskUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+          example: Updated task
+        description:
+          type: string
+          example: Updated description
+        completed:
+          type: boolean
+          example: true
+    
+    Error:
+      type: object
+      properties:
+        status:
+          type: string
+          example: error
+        message:
+          type: string
+          example: An error occurred

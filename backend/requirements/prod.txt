@@ -1,0 +1,10 @@
+# Include base requirements
+-r base.txt
+
+# Production
+gunicorn>=21.0.0,<22.0.0
+whitenoise>=6.0.0,<7.0.0
+psycopg2-binary>=2.9.3,<3.0.0  # For PostgreSQL in production
+
+# Monitoring
+sentry-sdk>=1.40.0,<2.0.0
